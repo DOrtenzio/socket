@@ -92,14 +92,6 @@ public class Server {
             } while (comandoClient!=null && !comandoClient.getNomeDelComando().equals("FINE"));
         } catch (IOException ioException) {
             ioException.printStackTrace();
-        } finally {
-            try {
-                in.close();
-                out.close();
-                serverSocket.close();
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
         }
     }
 
