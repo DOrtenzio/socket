@@ -17,7 +17,7 @@ public class Server {
     private BufferedReader in;
     ObjectMapper mapper = new ObjectMapper();
 
-    Server(String [] listaPizze) {
+    public Server(String [] listaPizze) {
         this.listaPizze=listaPizze;
         this.connessione = null;
     }
@@ -38,7 +38,7 @@ public class Server {
             PrintWriter pw = new PrintWriter(out);
             pw.println(msg);
             pw.flush();
-            System.out.println("Server > " + msg);
+            System.out.println("JSON: " + msg);
         } catch (Exception ioException) {
             ioException.printStackTrace();
         }
