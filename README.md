@@ -1,4 +1,4 @@
-# SOCKET 1
+# SOCKET 1 (esPizze/)
 
 > ## PIZZA
 Partendo dal semplice visto in classe scrivere un applicazione client server in cui
@@ -16,3 +16,7 @@ SERVER
 - se il messaggio è richiede lista pizze restituisce la lista delle pizze
 - se il messaggio è scegliere una pizza specifica la concede sempre restituendo una pizza specifica
 - rimane sempre attivo per nuovi client
+
+# SOCKET 2 (esPizze_JSON/)
+> ## PIZZA
+Modifica il precedente aggiungendo la comunicazione con JSON
