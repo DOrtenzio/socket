@@ -5,12 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Client {
     private Scanner scanner;
-    private String [] listaPizze;
+    private ListaPizze listaPizze;
 
     private Socket connessione;
     private PrintWriter out;
@@ -31,86 +30,83 @@ public class Client {
             out.flush();
             in = new BufferedReader(new InputStreamReader(connessione.getInputStream()));
 
-            Comando comandoCliente=null;
-            Comando comandoServer=null;
+            try {
+                //CONNESSIONE
+                System.out.println("Server >" + mapper.readValue(in.readLine(), Comando.class).getNomeDelComando());
 
-            do {
-                try {
-                    String messaggio = in.readLine();
-                    comandoServer = mapper.readValue(messaggio, Comando.class);
-                    System.out.println("Server >" + comandoServer.getNomeDelComando());
-                    int scelta;
-                    do {
-                        System.out.println("\nScegli un'opzione:" +
-                                "\n1) Richiedi Lista Pizze" +
-                                "\n2) Invia Pizza" +
-                                "\n3) Concludi ordine");
-                        scelta = Integer.parseInt(scanner.next());
-                        switch (scelta) {
-                            case 1:
-                                System.out.println("Client >  Richiesta lista pizze");
-                                comandoCliente=new Comando();
-                                comandoCliente.setNomeDelComando("lista");
-                                inviaMessaggio(mapper.writeValueAsString(comandoCliente));
+                //MENU'
+                int scelta;
+                do {
+                    System.out.println(
+                            "\nScegli un'opzione:" +
+                            "\n1) Richiedi Lista Pizze" +
+                            "\n2) Invia Pizza" +
+                            "\n3) Concludi ordine"
+                    );
+                    scelta = Integer.parseInt(scanner.next());
 
+                    switch (scelta) {
+                        //LISTA PIZZE
+                        case 1:
+                            //RICHIESTA
+                            System.out.println("Client >  Richiesta lista pizze");
+                            inviaMessaggio(mapper.writeValueAsString(new Comando("getLista",0)));
+                            //RISPOSTA
+                            this.listaPizze = mapper.readValue(in.readLine(), ListaPizze.class);
+                            System.out.println("Client > Lista pizze ricevuta: \n" + this.listaPizze);
+                            break;
 
-                                this.listaPizze = (mapper.readValue(in.readLine(), Comando.class)).getNomeDelComando().split("-");
-                                System.out.println("Client > Lista pizze ricevuta: \n" + Arrays.toString(this.listaPizze));
-                                break;
-                            case 2:
-                                if (listaPizze == null) {
-                                    System.out.println("Client > Pizze non disponibili, richiesta al server <--->");
-                                    comandoCliente=new Comando();
-                                    comandoCliente.setNomeDelComando("lista");
-                                    inviaMessaggio(mapper.writeValueAsString(comandoCliente));
+                        //SCELTA PIZZA
+                        case 2:
+                            if (this.listaPizze == null) { //Non sappiamo ancora la lista delle pizze
+                                //RICHIESTA
+                                System.out.println("Client > Pizze non disponibili, richiesta al server. Sorry bro!");
+                                inviaMessaggio(mapper.writeValueAsString(new Comando("getLista",0)));
+                                //RISPOSTA
+                                this.listaPizze = mapper.readValue(in.readLine(), ListaPizze.class);
+                                System.out.println("Client > Lista pizze aggiornata: " + this.listaPizze);
+                            }
+                            int indexPizzaScelta;
+                            do {
+                                System.out.println("Seleziona una pizza (inserisci l'indice corrispondente):");
+                                System.out.println(this.listaPizze.listaScelta());
+                                indexPizzaScelta = Integer.parseInt(scanner.next());
 
-                                    this.listaPizze = (mapper.readValue(in.readLine(), Comando.class)).getNomeDelComando().split("-");
-                                    System.out.println("Client > Lista pizze aggiornata: " + Arrays.toString(this.listaPizze));
+                                if (indexPizzaScelta >= 0 && indexPizzaScelta < listaPizze.getLength()) {
+                                    //RICHIESTA
+                                    inviaMessaggio(mapper.writeValueAsString(new Comando("getPizza_"+listaPizze.getPizzaIndice(indexPizzaScelta).trim(),0)));
+                                    System.out.println("Client > Pizza ordinata: " + this.listaPizze.getPizzaIndice(indexPizzaScelta));
+                                    //RISPOSTA
+                                    String pizzaRicevuta=(mapper.readValue(in.readLine(), Comando.class)).getNomeDelComando();
+                                    if (pizzaRicevuta.equalsIgnoreCase(listaPizze.getPizzaIndice(indexPizzaScelta)))
+                                        System.out.println("Client > Conferma: Pizza ricevuta correttamente.");
+                                    else {
+                                        System.out.println("Client > Pizza errata ricevuta!");
+                                        indexPizzaScelta=-1;
+                                    }
+                                } else {
+                                    System.out.println("Client > Indice non valido, riprova.");
                                 }
-                                int indicePizza;
-                                do {
-                                    System.out.println("Seleziona una pizza (inserisci l'indice corrispondente):");
-                                    for (int i = 0; i < listaPizze.length; i++) {
-                                        System.out.println(i + ": " + listaPizze[i]);
-                                    }
-                                    indicePizza = Integer.parseInt(scanner.next());
-                                    if (indicePizza >= 0 && indicePizza < listaPizze.length) {
-                                        comandoCliente=new Comando();
-                                        comandoCliente.setNomeDelComando(listaPizze[indicePizza].trim());
-                                        inviaMessaggio(mapper.writeValueAsString(comandoCliente));
-                                        System.out.println("Client > Pizza ordinata: " + listaPizze[indicePizza]);
-                                        String pizzaRicevuta = (mapper.readValue(in.readLine(), Comando.class)).getNomeDelComando();
-                                        if (pizzaRicevuta.equalsIgnoreCase(listaPizze[indicePizza])) {
-                                            System.out.println("Client > Conferma: Pizza ricevuta correttamente.");
-                                        } else {
-                                            System.out.println("Client > Pizza errata ricevuta!");
-                                        }
-                                    } else {
-                                        System.out.println("Client > Indice non valido, riprova.");
-                                        indicePizza = -1;
-                                    }
-                                } while (indicePizza == -1);
-                                break;
-                            case 3:
-                                System.out.println("Client > Chiusura ordine");
-                                comandoCliente=new Comando();
-                                comandoCliente.setNomeDelComando("FINE");
-                                inviaMessaggio(mapper.writeValueAsString(comandoCliente));
-                                System.out.println("Server > Ordine concluso con successo.");
-                                scanner.close();
-                                break;
-                            default:
-                                System.out.println("[ERRORE] Opzione non valida, riprova.");
-                        }
-                    } while (scelta != 3);
-                } catch (Exception classNot) {
-                    System.err.println("[ERRORE] Dati non in JSON");
-                }
-            } while (comandoServer!=null && !comandoServer.getNomeDelComando().equals("FINE"));
+                            } while (indexPizzaScelta==-1);
+                            break;
+                        case 3:
+                            //RICHIESTA
+                            System.out.println("Client > Chiusura ordine");
+                            inviaMessaggio(mapper.writeValueAsString(new Comando("bye",0)));
+                            //RISPOSTA
+                            System.out.println("Server > "+mapper.readValue(in.readLine(), Comando.class).getNomeDelComando());
+                            break;
+                        default:
+                            System.err.println("[ERRORE] Opzione non valida, riprova.");
+                    }
+                } while (scelta != 3);
+            } catch (Exception classNot) {
+                System.err.println(classNot);
+            }
         } catch (UnknownHostException unknownHost) {
             System.err.println("[ERRORE] Host sconosciuto");
         } catch (Exception ioException) {
-            ioException.printStackTrace();
+            System.err.println(ioException);
         } finally {
             try {
                 scanner.close();
@@ -118,7 +114,7 @@ public class Client {
                 out.close();
                 connessione.close();
             } catch (Exception ioException) {
-                ioException.printStackTrace();
+                System.err.println(ioException);
             }
         }
     }

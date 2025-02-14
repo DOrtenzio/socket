@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="lib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/esPizze_JSON/clientSocket/lib/jackson-annotations-2.13.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/esPizze_JSON/clientSocket/lib/jackson-databind-2.13.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/esPizze_JSON/clientSocket/lib/jackson-core-2.13.3.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
