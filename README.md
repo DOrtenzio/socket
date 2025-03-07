@@ -21,6 +21,6 @@ SERVER
 > ## PIZZA
 Modifica il precedente aggiungendo la comunicazione con JSON
 
-# SOCKET 3 (esPizze_Multi/)
+# SOCKET 3 (esPizze_multi/)
 > ## PIZZA
 Modifica il precedente aggiungendo la comunicazione multiclient
